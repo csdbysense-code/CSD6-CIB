@@ -1765,3 +1765,248 @@ footer {
     max-width: 280px;
   }
 }
+/* --- หน้าผลงาน: แถบเครื่องมือ / เลือกช่วงเวลา --- */
+.news-toolbar {
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0, 38, 75, 0.08);
+  padding: 18px 20px 12px;
+  margin-bottom: 30px;
+}
+
+.news-toolbar[hidden],
+.loading[hidden] {
+  display: none;
+}
+
+.news-toolbar-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.news-search {
+  position: relative;
+  flex: 1;
+}
+
+.news-search i {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+}
+
+.news-search input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 14px 10px 40px;
+  font-family: inherit;
+  font-size: 1rem;
+  border: 2px solid #e2e6ea;
+  border-radius: 999px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.news-search input:focus,
+.news-sort:focus-visible,
+.period-chip:focus-visible {
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.15);
+  outline: none;
+}
+
+.news-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--primary-color);
+  background: #eef3f9;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+.news-sort:hover {
+  background: #dfe8f3;
+}
+
+.period-picker {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.period-label {
+  flex-shrink: 0;
+  padding-top: 8px;
+  font-weight: 600;
+  color: var(--primary-color);
+  white-space: nowrap;
+}
+
+.period-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.period-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px 6px 14px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: #444;
+  background: var(--white);
+  border: 1.5px solid #d6dde5;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.period-chip:hover {
+  border-color: var(--secondary-color);
+  color: var(--secondary-color);
+}
+
+.period-chip .chip-count {
+  min-width: 22px;
+  padding: 1px 7px;
+  font-size: 0.8rem;
+  text-align: center;
+  color: #555;
+  background: #eef1f4;
+  border-radius: 999px;
+}
+
+.period-chip.active {
+  color: var(--white);
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.period-chip.active .chip-count {
+  color: var(--primary-color);
+  background: var(--accent-color);
+}
+
+.news-result {
+  margin: 12px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid #eef1f4;
+  font-size: 0.9rem;
+  color: var(--text-light);
+}
+
+.news-list .month-title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.news-list .month-title small {
+  font-size: 0.9rem;
+  font-weight: normal;
+  color: #888;
+}
+
+.news-empty {
+  text-align: center;
+  color: #888;
+  padding: 40px 0;
+}
+
+/* รูปในการ์ด: skeleton ระหว่างโหลด และภาพสำรองเมื่อไม่มีรูป */
+.news-list .card-image {
+  background: linear-gradient(100deg, #eceff3 30%, #f6f8fa 50%, #eceff3 70%);
+  background-size: 200% 100%;
+  animation: cardShimmer 1.4s linear infinite;
+}
+
+.news-list .card-image.loaded {
+  background: #eee;
+  animation: none;
+}
+
+.news-list .card-image.no-image {
+  animation: none;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+}
+
+.news-list .card-image.no-image::after {
+  content: "\f1ea";
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.6rem;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+@keyframes cardShimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.card-new {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 1;
+  padding: 3px 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  background: var(--accent-color);
+  border-radius: 999px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 768px) {
+  .news-toolbar {
+    padding: 14px 14px 10px;
+  }
+
+  .news-toolbar-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .news-sort {
+    justify-content: center;
+  }
+
+  .period-picker {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .period-label {
+    padding-top: 0;
+  }
+
+  /* มือถือ: เลื่อนชิปแนวนอนแทนการขึ้นหลายบรรทัด */
+  .period-chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    width: 100%;
+    padding-bottom: 6px;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+  }
+}

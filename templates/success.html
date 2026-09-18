@@ -12,16 +12,32 @@ content %}
 
     <div id="loading" class="loading">กำลังโหลดข้อมูล...</div>
 
-    <div class="filter-container" id="filterContainer" style="display: none">
-      <label for="monthSelect" class="filter-label">เลือกช่วงเวลา :</label>
-      <select id="monthSelect" class="custom-select">
-        <option value="all">ทั้งหมด</option>
-      </select>
+    <div class="news-toolbar" id="filterContainer" hidden>
+      <div class="news-toolbar-row">
+        <div class="news-search">
+          <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+          <input
+            type="search"
+            id="newsSearch"
+            placeholder="ค้นหาชื่อเรื่อง..."
+            aria-label="ค้นหาชื่อเรื่อง"
+          />
+        </div>
+        <button type="button" id="sortToggle" class="news-sort" aria-label="สลับการเรียงลำดับ">
+          <i class="fa-solid fa-arrow-down-wide-short" aria-hidden="true"></i>
+          <span>ใหม่ล่าสุดก่อน</span>
+        </button>
+      </div>
+
+      <div class="period-picker">
+        <span class="period-label"><i class="fa-regular fa-calendar" aria-hidden="true"></i> ช่วงเวลา</span>
+        <div class="period-chips" id="periodChips" role="tablist" aria-label="เลือกช่วงเวลา"></div>
+      </div>
+
+      <p class="news-result" id="newsResult" aria-live="polite"></p>
     </div>
 
-    <div id="currentMonthTitle" class="month-title" style="display: none"></div>
-
-    <div id="newsGrid" class="cards-grid fade-in"></div>
+    <div id="newsGrid" class="news-list"></div>
   </div>
 </main>
 
@@ -38,7 +54,19 @@ content %}
     const COL_LINK = 7; // Col H: ลิ้งค์ข่าว
     const COL_IMG = 8; // Col I: รูปภาพ
 
+    const NEW_BADGE_DAYS = 14; // ข่าวที่ลงไม่เกินกี่วัน จะมีป้าย "ใหม่"
+    const THAI_MONTHS = [
+      "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+      "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม",
+    ];
+    const THAI_MONTHS_SHORT = [
+      "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
+      "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค.",
+    ];
+
+    const state = { month: "all", query: "", newestFirst: true };
     let allNewsData = [];
+    let months = [];
 
     async function fetchData() {
       try {
@@ -47,132 +75,331 @@ content %}
         const rows = csvToArray(data).slice(1); // ตัด Header
 
         allNewsData = rows
-          .map((row) => {
-            if (row.length < 2) return null;
+          .map((row, index) => {
+            const title = (row[COL_TITLE] || "").trim();
+            if (!title) return null;
+            const filterMonth = (row[COL_MONTH] || "").trim() || "อื่นๆ";
+            const date = parseThaiDate(row[COL_DATE]) || parseMonthLabel(filterMonth);
             return {
-              filterMonth: row[COL_MONTH] ? row[COL_MONTH].trim() : "อื่นๆ",
-              title: row[COL_TITLE],
-              displayDate: row[COL_DATE],
-              link: row[COL_LINK],
-              image: convertDriveImageLink(row[COL_IMG]), // แปลงลิ้งค์รูปภาพ
+              order: index,
+              filterMonth,
+              title,
+              date,
+              displayDate: date ? formatThaiDate(date) : (row[COL_DATE] || "").trim(),
+              link: toUrl(row[COL_LINK]),
+              images: buildImageSources(row[COL_IMG], row[COL_LINK]),
             };
           })
-          .filter((item) => item && item.title);
+          .filter(Boolean);
 
-        initDropdown();
-        document.getElementById("loading").style.display = "none";
-        document.getElementById("filterContainer").style.display = "flex";
+        months = buildMonths();
+        state.month = readMonthFromHash();
+        document.getElementById("loading").hidden = true;
+        document.getElementById("filterContainer").hidden = false;
+
+        initControls();
+        render();
       } catch (error) {
         console.error("Error:", error);
         document.getElementById("loading").innerText = "ไม่สามารถดึงข้อมูลได้";
       }
     }
 
-    function initDropdown() {
-      const select = document.getElementById("monthSelect");
-
-      // ดึงรายชื่อเดือนทั้งหมดที่มี (Unique)
-      const uniqueMonths = [
-        ...new Set(allNewsData.map((item) => item.filterMonth)),
-      ];
-
-      // เพิ่มตัวเลือกเข้าไปใน Dropdown
-      uniqueMonths.forEach((month) => {
-        if (month !== "อื่นๆ" && month !== "") {
-          const option = document.createElement("option");
-          option.value = month;
-          option.innerText = month;
-          select.appendChild(option);
-        }
-      });
-
-      // เพิ่ม Event Listener เมื่อเลือกค่าใหม่
-      select.addEventListener("change", function () {
-        filterNews(this.value);
-      });
-
-      // โหลดข้อมูลทั้งหมดเป็นค่าเริ่มต้น
-      filterNews("all");
+    // ---------- วันที่ ----------
+    // รองรับ dd/mm/yyyy ทั้ง ค.ศ. (2026) และ พ.ศ. (2569)
+    function parseThaiDate(text) {
+      const m = (text || "").trim().match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
+      if (!m) return null;
+      let year = parseInt(m[3], 10);
+      if (year > 2400) year -= 543;
+      const date = new Date(year, parseInt(m[2], 10) - 1, parseInt(m[1], 10));
+      return isNaN(date) ? null : date;
     }
 
-    function filterNews(monthKey) {
-      let filteredData;
-      const titleElem = document.getElementById("currentMonthTitle");
+    // แปลงชื่อเดือนใน Col A เช่น "กันยายน 2569" เป็นวันที่ 1 ของเดือนนั้น
+    function parseMonthLabel(label) {
+      const monthIndex = THAI_MONTHS.findIndex((name) => label.includes(name));
+      const yearMatch = label.match(/\d{4}/);
+      if (monthIndex < 0 || !yearMatch) return null;
+      let year = parseInt(yearMatch[0], 10);
+      if (year > 2400) year -= 543;
+      return new Date(year, monthIndex, 1);
+    }
 
-      if (monthKey === "all") {
-        filteredData = allNewsData;
-        titleElem.innerText = "ข่าวทั้งหมด";
-      } else {
-        filteredData = allNewsData.filter(
-          (item) => item.filterMonth === monthKey,
-        );
-        titleElem.innerText = `ประจำเดือน ${monthKey}`;
+    function formatThaiDate(date) {
+      return `${date.getDate()} ${THAI_MONTHS_SHORT[date.getMonth()]} ${date.getFullYear() + 543}`;
+    }
+
+    function shortMonthLabel(label) {
+      const monthIndex = THAI_MONTHS.findIndex((name) => label.includes(name));
+      const yearMatch = label.match(/\d{4}/);
+      if (monthIndex < 0) return label;
+      return `${THAI_MONTHS_SHORT[monthIndex]}${yearMatch ? " " + yearMatch[0].slice(-2) : ""}`;
+    }
+
+    function isRecent(date) {
+      if (!date) return false;
+      const days = (Date.now() - date.getTime()) / 86400000;
+      return days >= -1 && days <= NEW_BADGE_DAYS;
+    }
+
+    // ---------- รูปภาพ ----------
+    function toUrl(value) {
+      const url = (value || "").trim();
+      return /^https?:\/\//i.test(url) ? url : "";
+    }
+
+    // คืนค่ารายการรูปที่จะลองโหลดตามลำดับ ถ้ารูปแรกเสียจะลองรูปถัดไป
+    function buildImageSources(imageCell, linkCell) {
+      const sources = [];
+      const image = toUrl(imageCell);
+      const link = toUrl(linkCell);
+
+      if (image) {
+        const drive = image.match(/drive\.google\.com\/.*(?:\/d\/|[?&]id=)([a-zA-Z0-9_-]+)/);
+        const youtube = image.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{6,})/);
+
+        if (drive) {
+          sources.push(`https://drive.google.com/thumbnail?id=${drive[1]}&sz=w1000`);
+        } else if (youtube) {
+          sources.push(`https://i.ytimg.com/vi/${youtube[1]}/hqdefault.jpg`);
+        } else if (looksLikeImageFile(image)) {
+          sources.push(image);
+        } else {
+          // ลิงก์หน้าเว็บ (โพสต์ Facebook / หน้าข่าว) ให้ server หารูปปกให้
+          sources.push(resolverUrl(image));
+        }
       }
 
-      titleElem.style.display = "block";
-      renderCards(filteredData);
+      // สำรอง: ใช้รูปปกของลิงก์ข่าว (Col H)
+      if (link) {
+        const fromLink = resolverUrl(link);
+        if (!sources.includes(fromLink)) sources.push(fromLink);
+      }
+      return sources;
     }
 
-    function renderCards(data) {
-      const grid = document.getElementById("newsGrid");
-      grid.innerHTML = "";
+    function looksLikeImageFile(url) {
+      return (
+        /\.(jpe?g|png|webp|gif|avif)(\?|#|$)/i.test(url) ||
+        /(fbcdn\.net|googleusercontent\.com|ytimg\.com)\//i.test(url)
+      );
+    }
 
-      // Animation Reset
-      grid.classList.remove("fade-in");
-      void grid.offsetWidth;
-      grid.classList.add("fade-in");
+    function resolverUrl(url) {
+      return `/api/image?url=${encodeURIComponent(url)}`;
+    }
 
-      if (data.length === 0) {
-        grid.innerHTML =
-          '<p style="text-align:center; width:100%; color:#888;">ไม่พบข้อมูลข่าวในช่วงเวลานี้</p>';
+    function attachImage(container, item) {
+      const sources = item.images.slice();
+      if (sources.length === 0) {
+        container.classList.add("no-image");
+        return;
+      }
+      const img = document.createElement("img");
+      img.alt = item.title;
+      img.loading = "lazy";
+      img.referrerPolicy = "no-referrer";
+      img.addEventListener("load", () => container.classList.add("loaded"));
+      img.addEventListener("error", () => {
+        const next = sources.shift();
+        if (next) img.src = next;
+        else {
+          img.remove();
+          container.classList.add("no-image");
+        }
+      });
+      img.src = sources.shift();
+      container.appendChild(img);
+    }
+
+    // ---------- ตัวกรอง ----------
+    function buildMonths() {
+      const map = new Map();
+      allNewsData.forEach((item) => {
+        const entry = map.get(item.filterMonth) || {
+          key: item.filterMonth,
+          count: 0,
+          sortDate: parseMonthLabel(item.filterMonth),
+          latest: null,
+        };
+        entry.count++;
+        if (item.date && (!entry.latest || item.date > entry.latest)) entry.latest = item.date;
+        map.set(item.filterMonth, entry);
+      });
+      return [...map.values()].sort(
+        (a, b) => (b.sortDate || b.latest || 0) - (a.sortDate || a.latest || 0),
+      );
+    }
+
+    function initControls() {
+      const chips = document.getElementById("periodChips");
+      const options = [{ key: "all", label: "ทั้งหมด", title: "ทั้งหมด", count: allNewsData.length }].concat(
+        months.map((m) => ({ key: m.key, label: shortMonthLabel(m.key), title: m.key, count: m.count })),
+      );
+
+      options.forEach((opt) => {
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = "period-chip";
+        chip.dataset.key = opt.key;
+        chip.title = opt.title;
+        chip.setAttribute("role", "tab");
+        const label = document.createElement("span");
+        label.textContent = opt.label;
+        const count = document.createElement("span");
+        count.className = "chip-count";
+        count.textContent = opt.count;
+        chip.append(label, count);
+        chip.addEventListener("click", () => selectMonth(opt.key));
+        chips.appendChild(chip);
+      });
+
+      let searchTimer;
+      document.getElementById("newsSearch").addEventListener("input", (e) => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+          state.query = e.target.value.trim().toLowerCase();
+          render();
+        }, 200);
+      });
+
+      document.getElementById("sortToggle").addEventListener("click", (e) => {
+        state.newestFirst = !state.newestFirst;
+        const btn = e.currentTarget;
+        btn.querySelector("span").textContent = state.newestFirst ? "ใหม่ล่าสุดก่อน" : "เก่าสุดก่อน";
+        btn.querySelector("i").className = state.newestFirst
+          ? "fa-solid fa-arrow-down-wide-short"
+          : "fa-solid fa-arrow-up-short-wide";
+        render();
+      });
+
+      window.addEventListener("hashchange", () => {
+        state.month = readMonthFromHash();
+        render();
+      });
+    }
+
+    // จำเดือนที่เลือกไว้ใน URL (#กันยายน 2569) เพื่อแชร์ลิงก์ได้
+    function selectMonth(key) {
+      state.month = key;
+      const hash = key === "all" ? "" : "#" + encodeURIComponent(key);
+      history.replaceState(null, "", location.pathname + location.search + hash);
+      render();
+    }
+
+    function readMonthFromHash() {
+      const key = decodeURIComponent(location.hash.slice(1));
+      return months.some((m) => m.key === key) ? key : "all";
+    }
+
+    function updateChips() {
+      document.querySelectorAll(".period-chip").forEach((chip) => {
+        const active = chip.dataset.key === state.month;
+        chip.classList.toggle("active", active);
+        chip.setAttribute("aria-selected", active);
+        // มือถือ: เลื่อนแถบชิปให้เห็นเดือนที่เลือก
+        if (active) {
+          const row = chip.parentElement;
+          row.scrollLeft = chip.offsetLeft - row.offsetLeft - 8;
+        }
+      });
+    }
+
+    function compareNews(a, b) {
+      const diff = (b.date || 0) - (a.date || 0) || b.order - a.order;
+      return state.newestFirst ? diff : -diff;
+    }
+
+    // ---------- แสดงผล ----------
+    function render() {
+      updateChips();
+
+      const items = allNewsData
+        .filter((item) => state.month === "all" || item.filterMonth === state.month)
+        .filter((item) => !state.query || item.title.toLowerCase().includes(state.query))
+        .sort(compareNews);
+
+      const periodText = state.month === "all" ? "ทุกช่วงเวลา" : `ประจำเดือน ${state.month}`;
+      document.getElementById("newsResult").textContent =
+        `${periodText} · พบ ${items.length} รายการ` + (state.query ? ` จากคำค้น “${state.query}”` : "");
+
+      const list = document.getElementById("newsGrid");
+      list.innerHTML = "";
+      list.classList.remove("fade-in");
+      void list.offsetWidth;
+      list.classList.add("fade-in");
+
+      if (items.length === 0) {
+        list.innerHTML = '<p class="news-empty">ไม่พบข้อมูลข่าวในช่วงเวลานี้</p>';
         return;
       }
 
-      data.forEach((item) => {
-        const imgUrl =
-          item.image && item.image.trim() !== ""
-            ? item.image
-            : "https://via.placeholder.com/400x300?text=No+Image";
-        const linkUrl = item.link && item.link.trim() !== "" ? item.link : "#";
-        const targetAttr = linkUrl !== "#" ? 'target="_blank"' : "";
-        const dateTxt = item.displayDate || "";
+      // แบ่งกลุ่มตามเดือน (เรียงตามลำดับที่ sort ไว้แล้ว)
+      const groups = new Map();
+      items.forEach((item) => {
+        if (!groups.has(item.filterMonth)) groups.set(item.filterMonth, []);
+        groups.get(item.filterMonth).push(item);
+      });
 
-        const cardHtml = `
-                    <a href="${linkUrl}" class="news-card" ${targetAttr}>
-                        <div class="card-image ">
-                            <img src="${imgUrl}" alt="${item.title}" loading="lazy" onerror="this.src='https://placehold.co/600x400?text=No+Image'">
-                        </div>
-                        <div class="card-content">
-                            <span class="card-date">${dateTxt}</span>
-                            <h3 class="card-title">${item.title}</h3>
-                        </div>
-                    </a>
-                `;
-        grid.innerHTML += cardHtml;
+      groups.forEach((groupItems, month) => {
+        const section = document.createElement("section");
+        section.className = "month-group";
+
+        const heading = document.createElement("h2");
+        heading.className = "month-title";
+        const name = document.createElement("span");
+        name.textContent = month;
+        const count = document.createElement("small");
+        count.textContent = `${groupItems.length} รายการ`;
+        heading.append(name, count);
+        section.appendChild(heading);
+
+        const grid = document.createElement("div");
+        grid.className = "cards-grid";
+        groupItems.forEach((item) => grid.appendChild(createCard(item)));
+        section.appendChild(grid);
+        list.appendChild(section);
       });
     }
 
-    // ฟังก์ชันแปลงลิงก์ Google Drive (ฉบับแก้ไข แก้ 404)
-    function convertDriveImageLink(url) {
-      if (!url) return '';
-
-      // Regex ใหม่: ดึง ID แบบระบุตัวอักษรที่อนุญาต (กันความผิดพลาด)
-      // รองรับทั้ง /file/d/ID/view และ /file/d/ID เฉยๆ
-      const driveMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-
-      if (driveMatch && driveMatch[1]) {
-        // ใช้ลิงก์แบบ Thumbnail แทน (sz=w1000 คือขอรูปความกว้าง 1000px เพื่อความชัด)
-        return `https://drive.google.com/thumbnail?id=${driveMatch[1]}&sz=w1000`;
+    function createCard(item) {
+      const card = document.createElement(item.link ? "a" : "div");
+      card.className = "news-card";
+      if (item.link) {
+        card.href = item.link;
+        card.target = "_blank";
+        card.rel = "noopener";
       }
 
-      return url;
-    }
+      const imageBox = document.createElement("div");
+      imageBox.className = "card-image";
+      if (isRecent(item.date)) {
+        const badge = document.createElement("span");
+        badge.className = "card-new";
+        badge.textContent = "ใหม่";
+        imageBox.appendChild(badge);
+      }
+      attachImage(imageBox, item);
 
+      const content = document.createElement("div");
+      content.className = "card-content";
+      const date = document.createElement("span");
+      date.className = "card-date";
+      date.textContent = item.displayDate;
+      const title = document.createElement("h3");
+      title.className = "card-title";
+      title.textContent = item.title;
+      content.append(date, title);
+
+      card.append(imageBox, content);
+      return card;
+    }
 
     // CSV Parser
     function csvToArray(text) {
       let p = "",
-        row = [" "],
+        row = [""],
         ret = [row],
         i = 0,
         r = 0,
