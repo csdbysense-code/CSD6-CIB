@@ -49,11 +49,13 @@ block content %}
         // ข้าม Header (row 0) และ map ข้อมูล
         allData = rows
           .slice(1)
-          .map((row) => {
+          .map((row, index) => {
             // กรองแถวว่าง (ต้องมีหัวข้อเรื่อง)
             if (!row[COL_TITLE]) return null;
 
             return {
+              order: index,
+              sortDate: parseThaiDate(row[COL_DATE]),
               category: row[COL_CATEGORY] ? row[COL_CATEGORY].trim() : "ทั่วไป",
               date: row[COL_DATE] || "",
               title: row[COL_TITLE],
@@ -61,7 +63,9 @@ block content %}
               image: convertDriveImageLink(row[COL_IMG]), // แปลงลิ้งค์รูปภาพ
             };
           })
-          .filter((item) => item !== null);
+          .filter((item) => item !== null)
+          // เรียงใหม่ล่าสุดขึ้นก่อน (วันเดียวกัน: แถวที่เพิ่มทีหลังใน Sheet ขึ้นก่อน)
+          .sort((a, b) => (b.sortDate || 0) - (a.sortDate || 0) || b.order - a.order);
 
         setupDropdown();
         renderCards(allData);
@@ -139,6 +143,16 @@ block content %}
                 `;
         grid.innerHTML += card;
       });
+    }
+
+    // แปลงวันที่ d/m/yyyy รองรับทั้ง พ.ศ. (2569) และ ค.ศ. (2026)
+    function parseThaiDate(text) {
+      const m = (text || "").trim().match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
+      if (!m) return null;
+      let year = parseInt(m[3], 10);
+      if (year > 2400) year -= 543;
+      const date = new Date(year, parseInt(m[2], 10) - 1, parseInt(m[1], 10));
+      return isNaN(date) ? null : date;
     }
 
     // ฟังก์ชันแปลงลิงก์ Google Drive (ฉบับแก้ไข แก้ 404)
