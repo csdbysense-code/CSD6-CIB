@@ -5,7 +5,7 @@ import re
 import socket
 import time
 import urllib.request
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 from flask import Flask, Response, abort, redirect, render_template, request
 
@@ -43,6 +43,13 @@ def is_public_url(url):
 
 
 def find_og_image(url):
+    # ลิงก์รูป Facebook (photo?fbid=...) ดึงรูปจาก lookaside ได้ตรงๆ ไม่ต้องเปิดหน้าโพสต์
+    parsed = urlparse(url)
+    if (parsed.hostname or "").endswith("facebook.com") and "photo" in parsed.path:
+        fbid = parse_qs(parsed.query).get("fbid", [""])[0]
+        if fbid.isdigit():
+            return f"https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id={fbid}"
+
     for ua in OG_USER_AGENTS:
         try:
             req = urllib.request.Request(url, headers={"User-Agent": ua, "Accept-Language": "th,en;q=0.8"})
