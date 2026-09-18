@@ -16,6 +16,7 @@ app = Flask(__name__)
 # endpoint นี้จะเปิดหน้านั้นแล้วหา og:image มาให้ (เก็บ cache ไว้ 6 ชั่วโมง)
 OG_CACHE = {}
 OG_CACHE_TTL = 6 * 60 * 60
+OG_CACHE_FAIL_TTL = 10 * 60
 OG_USER_AGENTS = [
     "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)",
     "Twitterbot/1.0",
@@ -93,7 +94,9 @@ def resolve_image():
         abort(400)
 
     cached = OG_CACHE.get(url)
-    if cached and time.time() - cached[1] < OG_CACHE_TTL:
+    # ถ้าครั้งก่อนหารูปไม่เจอ ให้ลองใหม่หลัง 10 นาที (กัน error ชั่วคราวค้างนาน)
+    ttl = OG_CACHE_TTL if cached and cached[0] else OG_CACHE_FAIL_TTL
+    if cached and time.time() - cached[1] < ttl:
         image = cached[0]
     else:
         image = find_og_image(url)
