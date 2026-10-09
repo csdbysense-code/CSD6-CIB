@@ -1,8 +1,9 @@
-{% extends "layout.html" %} {% block title %}ติดต่อเรา{% endblock %} {% block
+{% extends "layout.html" %} {% block title %}ติดต่อเรา{% endblock %}
+{% block description %}ที่อยู่ อีเมล หมายเลขโทรศัพท์ และแผนที่ของกองกำกับการ 6 กองบังคับการปราบปราม{% endblock %} {% block
 content %}
 <section class="page-banner">
   <div>
-    <h2>ติดต่อเรา</h2>
+    <h1>ติดต่อเรา</h1>
     <p class="banner-subtitle">CONTACT</p>
   </div>
 </section>
@@ -35,9 +36,7 @@ content %}
             <h3>อีเมล</h3>
             <a href="mailto:saraban_csd.cib@police.go.th" id="email-link">saraban_csd.cib@police.go.th</a>
             <br />
-            <small style="color: #999; cursor: pointer; text-decoration: underline" onclick="copyEmail()">
-              (คลิกเพื่อคัดลอกอีเมล)
-            </small>
+            <button type="button" class="copy-email" id="copyEmail">(คลิกเพื่อคัดลอกอีเมล)</button>
           </div>
         </div>
 
@@ -68,29 +67,18 @@ content %}
       </div>
 
       <div class="map-wrapper">
-        <iframe
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4698.35668490979!2d100.56328620924629!3d13.819495282130639!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x30e29c573553629b%3A0x9b41a8000e2cd6bd!2z4LiB4Lit4LiH4Lia4Lix4LiH4LiE4Lix4Lia4LiB4Liy4Lij4Lib4Lij4Liy4Lia4Lib4Lij4Liy4LihICjguJrguIEu4LibLik!5e1!3m2!1sth!2sth!4v1770476817147!5m2!1sth!2sth"
-          width="600" height="450" style="border: 0" allowfullscreen="" loading="lazy"
-          referrerpolicy="no-referrer-when-downgrade" title="แผนที่กองบังคับการปราบปราม">
-        </iframe>
+        <div class="map-placeholder" id="mapPlaceholder" data-src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4698.35668490979!2d100.56328620924629!3d13.819495282130639!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x30e29c573553629b%3A0x9b41a8000e2cd6bd!2z4LiB4Lit4LiH4Lia4Lix4LiH4LiE4Lix4Lia4LiB4Liy4Lij4Lib4Lij4Liy4Lia4Lib4Lij4Liy4LihICjguJrguIEu4LibLik!5e1!3m2!1sth!2sth!4v1770476817147!5m2!1sth!2sth">
+          <i class="fa-solid fa-map-location-dot" aria-hidden="true"></i>
+          <p>แผนที่นี้แสดงผ่าน Google Maps ซึ่งอาจตั้งคุกกี้ของ Google</p>
+          <button type="button" class="map-load-btn" id="loadMap">แสดงแผนที่</button>
+          <a href="https://maps.app.goo.gl/wnUEYN1KhSEo67LQ9" target="_blank" rel="noopener">หรือเปิดใน Google Maps</a>
+        </div>
       </div>
     </div>
   </section>
 </main>
-<script>
-  {
-    function copyEmail() {
-      const email = "saraban_csd.cib@police.go.th";
-      navigator.clipboard
-        .writeText(email)
-        .then(() => {
-          alert("คัดลอกอีเมลเรียบร้อยแล้ว: " + email);
-        })
-        .catch((err) => {
-          console.error("ไม่สามารถคัดลอกได้", err);
-        });
-    }
-    window.copyEmail = copyEmail;
-  }
-</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/contact.js') }}"></script>
 {% endblock %}

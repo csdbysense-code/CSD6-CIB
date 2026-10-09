@@ -1,8 +1,9 @@
-{% extends "layout.html" %} {% block title %}เกี่ยวกับเรา{% endblock %} {% block
+{% extends "layout.html" %} {% block title %}เกี่ยวกับเรา{% endblock %}
+{% block description %}ประวัติความเป็นมา อำนาจหน้าที่ และโครงสร้างผู้บังคับบัญชาของกองกำกับการ 6 กองบังคับการปราบปราม{% endblock %} {% block
 content %}
 <section class="page-banner">
   <div>
-    <h2>WE ARE CSD SIX</h2>
+    <h1>WE ARE CSD SIX</h1>
     <p class="banner-subtitle">About Us</p>
   </div>
 </section>
@@ -10,11 +11,11 @@ content %}
 <main>
   <div class="container">
     <div class="tabs">
-      <button class="tab-btn active" onclick="openTab('history')">
+      <button type="button" class="tab-btn active" data-tab="history" aria-controls="history" aria-selected="true">
         1. ประวัติความเป็นมา
       </button>
-      <button class="tab-btn" onclick="openTab('duty')">2. อำนาจหน้าที่</button>
-      <button class="tab-btn" onclick="openTab('commanders')">
+      <button type="button" class="tab-btn" data-tab="duty" aria-controls="duty" aria-selected="false">2. อำนาจหน้าที่</button>
+      <button type="button" class="tab-btn" data-tab="commanders" aria-controls="commanders" aria-selected="false">
         3. ผู้บังคับบัญชา
       </button>
     </div>
@@ -246,180 +247,15 @@ content %}
       <div id="commander-container" class="commander-container">
         <p style="text-align: center;">กำลังโหลดข้อมูล...</p>
       </div>
-      <p style="text-align: center; margin-top: 30px; font-size: 0.9em; color: #888;">
+      <p style="text-align: center; margin-top: 30px; font-size: 0.9em; color: #666;">
         *ข้อมูลผู้บังคับบัญชาอาจมีการเปลี่ยนแปลงตามวาระการแต่งตั้ง
       </p>
     </div>
-
+  </div>
 </main>
+{% endblock %}
 
-<script>
-  {
-    function openTab(tabName) {
-      // 1. ซ่อนเนื้อหาทั้งหมดก่อน
-      var i;
-      var x = document.getElementsByClassName("content-section");
-      for (i = 0; i < x.length; i++) {
-        x[i].classList.remove("active");
-      }
-
-      // 2. ลบ class 'active' ออกจากปุ่มทั้งหมด
-      var tablinks = document.getElementsByClassName("tab-btn");
-      for (i = 0; i < tablinks.length; i++) {
-        tablinks[i].classList.remove("active");
-      }
-
-      // 3. แสดงเนื้อหาที่เลือก และใส่ class 'active' ให้ปุ่มที่กด
-      document.getElementById(tabName).classList.add("active");
-
-      // ค้นหาปุ่มที่ถูกกดแล้วเติม class active (ใช้ event.currentTarget หรือ loop หา index ก็ได้)
-      // ในที่นี้เราจะ loop เพื่อหาปุ่มที่ onclick ตรงกับ tabName เพื่อความง่าย
-      for (i = 0; i < tablinks.length; i++) {
-        if (tablinks[i].getAttribute("onclick").includes(tabName)) {
-          tablinks[i].classList.add("active");
-        }
-      }
-    }
-
-
-    // ฟังก์ชันรัน โครงสร้างผู้บังคับบัญชาจาก Google Sheets
-    // 1. ใส่ Google Sheet ID ของคุณที่นี่
-    const sheetId = '1XW51ZiRuXKo15D1rXYNjViCqsf_InhlFZJ0oTvWKFrw';
-
-    // URL สำหรับดึงข้อมูลแบบ JSON
-    const sheetUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
-
-    // ฟังก์ชันแปลงลิงก์ Google Drive (ฉบับแก้ไข แก้ 404)
-    function convertDriveImageLink(url) {
-      if (!url) return '';
-
-      // Regex ใหม่: ดึง ID แบบระบุตัวอักษรที่อนุญาต (กันความผิดพลาด)
-      // รองรับทั้ง /file/d/ID/view และ /file/d/ID เฉยๆ
-      const driveMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-
-      if (driveMatch && driveMatch[1]) {
-        // ใช้ลิงก์แบบ Thumbnail แทน (sz=w1000 คือขอรูปความกว้าง 1000px เพื่อความชัด)
-        return `https://drive.google.com/thumbnail?id=${driveMatch[1]}&sz=w1000`;
-      }
-
-      return url;
-    }
-
-    async function fetchCommanders() {
-      try {
-        const response = await fetch(sheetUrl);
-        const text = await response.text();
-
-        // Google Sheet ส่งค่ามาติด text prefix ต้องลบออกเพื่อให้เป็น JSON แท้
-        const jsonText = text.substring(47).slice(0, -2);
-        const json = JSON.parse(jsonText);
-
-        const rows = json.table.rows;
-        const commanders = {
-          chief: [],
-          deputy: [],
-          inspector: []
-        };
-
-        // วนลูปจัดข้อมูลเข้ากลุ่ม
-        rows.forEach(row => {
-          // c[0] = group, c[1] = rank, c[2] = name, c[3] = position, c[4] = image
-
-          // ดึงค่า URL เดิมมาจาก Google Sheet
-          const rawImageUrl = row.c[4]?.v || '';
-
-          const data = {
-            group: row.c[0]?.v || '',
-            rank: row.c[1]?.v || '',
-            name: row.c[2]?.v || '',
-            position: row.c[3]?.v || '',
-            // เรียกใช้ฟังก์ชันแปลงลิงก์ที่นี่
-            image: convertDriveImageLink(rawImageUrl)
-          };
-
-          if (commanders[data.group]) {
-            commanders[data.group].push(data);
-          }
-        });
-
-        renderCommanders(commanders);
-
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        document.getElementById('commander-container').innerHTML = '<p style="text-align:center; color:red;">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>';
-      }
-    }
-
-    function renderCommanders(data) {
-      const container = document.getElementById('commander-container');
-      container.innerHTML = ''; // เคลียร์ loading
-
-      // ฟังก์ชันสร้าง HTML การ์ดแต่ละใบ
-      const createCard = (person, isChief = false) => {
-        const imgHtml = person.image
-          ? `<img src="${person.image}" alt="รูป ${person.position}" style="width: 150px; height: 200px; object-fit: cover;">`
-          : `<span>(รูปภาพ)</span>`;
-
-        const imgStyle = person.image ? '' : 'display: flex; align-items: center; justify-content: center;';
-
-        return `
-        <div class="commander-card ${isChief ? 'chief-card' : ''}">
-          <div class="img-placeholder" style="${imgStyle}">
-            ${imgHtml}
-          </div>
-          <span class="rank">${person.rank}</span>
-          <div class="name">${person.name}</div>
-          <div class="position">${person.position}</div>
-        </div>
-      `;
-      };
-
-      // 1. ส่วน ผกก. (Chief)
-      if (data.chief.length > 0) {
-        const sectionHtml = `
-        <div class="rank-section">
-          <div class="rank-title">ผู้กำกับการ 6 บก.ป.</div>
-          <div class="commander-row">
-            ${data.chief.map(c => createCard(c, true)).join('')}
-          </div>
-        </div>
-      `;
-        container.innerHTML += sectionHtml;
-      }
-
-      // 2. ส่วน รอง ผกก. (Deputy)
-      if (data.deputy.length > 0) {
-        const sectionHtml = `
-        <div class="rank-section">
-          <div class="rank-title">รองผู้กำกับการ 6 บก.ป.</div>
-          <div class="commander-row">
-            ${data.deputy.map(c => createCard(c)).join('')}
-          </div>
-        </div>
-      `;
-        container.innerHTML += sectionHtml;
-      }
-
-      // 3. ส่วน สว. (Inspector)
-      if (data.inspector.length > 0) {
-        const sectionHtml = `
-        <div class="rank-section">
-          <div class="rank-title">สารวัตร กก.6 บก.ป.</div>
-          <div class="commander-row">
-            ${data.inspector.map(c => createCard(c)).join('')}
-          </div>
-        </div>
-      `;
-        container.innerHTML += sectionHtml;
-      }
-    }
-
-    // เรียกทำงานเมื่อโหลดหน้าเว็บ
-    document.addEventListener('DOMContentLoaded', fetchCommanders);
-
-    // ให้ openTab เป็น global เพื่อให้ปุ่ม HTML เรียกใช้ได้
-    window.openTab = openTab;
-  }
-</script>
-
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/common.js') }}"></script>
+<script src="{{ url_for('static', filename='js/about.js') }}"></script>
 {% endblock %}

@@ -1,5 +1,4 @@
 /* style.css */
-@import url("https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;700&display=swap");
 
 :root {
   --primary-color: #00264b;
@@ -409,7 +408,7 @@ body p {
 
 .card-date {
   font-size: 0.85rem;
-  color: #888;
+  color: #666;
   margin-bottom: 8px;
   display: block;
 }
@@ -1104,10 +1103,17 @@ footer {
   filter: grayscale(0%);
 }
 
+.page-banner h1,
 .page-banner h2 {
   font-size: clamp(1.8rem, 5vw, 4rem);
   color: #ffffff;
   text-shadow: 4px 4px 20px rgb(0, 0, 0);
+}
+
+/* หัวข้อแบนเนอร์ที่เป็น h1 (หน้าเกี่ยวกับเรา / ติดต่อเรา) ให้หน้าตาเหมือน h2 เดิม */
+.page-banner h1 {
+  font-weight: bold;
+  margin-bottom: 0;
 }
 
 .page-banner .banner-subtitle {
@@ -1354,7 +1360,7 @@ footer {
   left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  color: #999;
+  color: #767676;
 }
 
 .news-search input {
@@ -1476,33 +1482,34 @@ footer {
 .news-list .month-title small {
   font-size: 0.9rem;
   font-weight: normal;
-  color: #888;
+  color: #666;
 }
 
 .news-empty {
+  grid-column: 1 / -1;
   text-align: center;
-  color: #888;
+  color: #666;
   padding: 40px 0;
 }
 
 /* รูปในการ์ด: skeleton ระหว่างโหลด และภาพสำรองเมื่อไม่มีรูป */
-.news-list .card-image {
+.card-image {
   background: linear-gradient(100deg, #eceff3 30%, #f6f8fa 50%, #eceff3 70%);
   background-size: 200% 100%;
   animation: cardShimmer 1.4s linear infinite;
 }
 
-.news-list .card-image.loaded {
+.card-image.loaded {
   background: #eee;
   animation: none;
 }
 
-.news-list .card-image.no-image {
+.card-image.no-image {
   animation: none;
   background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
 }
 
-.news-list .card-image.no-image::after {
+.card-image.no-image::after {
   content: "\f1ea";
   font-family: "Font Awesome 6 Free";
   font-weight: 900;
@@ -1567,4 +1574,180 @@ footer {
     scrollbar-width: thin;
     -webkit-overflow-scrolling: touch;
   }
+}
+
+/* --- แบนเนอร์คุกกี้ (ทุกหน้า) --- */
+.cookie-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #2c3e50;
+  color: #ffffff;
+  padding: 15px 20px;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  z-index: 9999;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.cookie-banner[hidden] {
+  display: none;
+}
+
+.cookie-banner p {
+  margin: 0;
+  max-width: 800px;
+  opacity: 1;
+  font-size: 14px;
+}
+
+.cookie-banner a {
+  color: #f1c40f;
+  text-decoration: underline;
+}
+
+.cookie-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.cookie-banner button {
+  background-color: #27ae60;
+  color: white;
+  border: 2px solid #27ae60;
+  padding: 8px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: bold;
+  white-space: nowrap;
+  transition: background-color 0.3s;
+}
+
+.cookie-banner button:hover {
+  background-color: #219150;
+}
+
+.cookie-banner .cookie-secondary {
+  background-color: transparent;
+  border-color: #ffffff;
+}
+
+.cookie-banner .cookie-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+@media (max-width: 600px) {
+  .cookie-banner {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+/* --- หน้าติดต่อ: ปุ่มคัดลอกอีเมล / แผนที่ที่โหลดเมื่อยินยอม --- */
+.copy-email {
+  background: none;
+  border: 0;
+  padding: 0;
+  font-family: inherit;
+  font-size: 0.83em;
+  color: #666;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.map-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px;
+  text-align: center;
+  color: var(--text-light);
+  background: #eef3f9;
+}
+
+.map-placeholder i {
+  font-size: 2.6rem;
+  color: var(--primary-color);
+}
+
+.map-placeholder p {
+  margin: 0;
+  opacity: 1;
+}
+
+.map-load-btn {
+  padding: 10px 24px;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--white);
+  background: var(--primary-color);
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.map-load-btn:hover {
+  background: var(--secondary-color);
+}
+
+.map-placeholder a {
+  color: var(--secondary-color);
+  text-decoration: underline;
+}
+
+/* --- หน้า 404 / 500 --- */
+.error-page {
+  max-width: 640px;
+  margin: 60px auto;
+  padding: 0 20px;
+  text-align: center;
+}
+
+.error-code {
+  font-size: 5rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--primary-color);
+  opacity: 1;
+}
+
+.error-message {
+  color: var(--text-light);
+  opacity: 1;
+}
+
+.error-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.error-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  color: var(--white);
+  background: var(--primary-color);
+  border-radius: 999px;
+}
+
+.error-btn-secondary {
+  color: var(--primary-color);
+  background: #eef3f9;
 }
