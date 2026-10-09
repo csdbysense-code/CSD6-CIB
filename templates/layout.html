@@ -23,25 +23,24 @@
 </head>
 
 <body>
-  <header>
-    <div class="top-bar">
-      <span>This is CSD6</span>
-      <span id="current-date"></span>
-    </div>
-    <header class="nav-container">
+  <div class="top-bar">
+    <span>This is CSD6</span>
+    <span id="current-date"></span>
+  </div>
+  <header class="nav-container">
       <div class="logo">
-        <img src="static/images/favicon.png" alt="CIB Logo" class="nav-logo">
+        <img src="{{ url_for('static', filename='images/favicon.png') }}" alt="CIB Logo" class="nav-logo">
       </div>
       <div class="logo">
-        <h1>กองกำกับการ 6 กองบังคับการปราบปราม</h1>
+        <div class="site-name">กองกำกับการ 6 กองบังคับการปราบปราม</div>
         <span style="text-align: left;">Crime Suppression Division 6 : CSD6</span>
       </div>
-      <button class="hamburger" id="hamburger" aria-label="เปิดเมนู">
+      <button class="hamburger" id="hamburger" aria-label="เปิดเมนู" aria-expanded="false" aria-controls="mainMenu">
         <span></span>
         <span></span>
         <span></span>
       </button>
-      <nav class="main-menu" id="mainMenu">
+      <nav class="main-menu" id="mainMenu" aria-label="เมนูหลัก">
         <ul>
           <li>
             <a href="/">หน้าหลัก<br />
@@ -65,12 +64,9 @@
           </li>
         </ul>
       </nav>
-      </div>
-    </header>
+  </header>
 
-    {% block section %} {% endblock %}
-
-    <main>{% block content %} {% endblock %}</main>
+    {% block content %} {% endblock %}
 
     <footer>
       <div class="footer-inner">
@@ -88,13 +84,13 @@
             10900
           </p>
           <div class="footer-social">
-            <a href="https://www.facebook.com/CIBTHAILAND/?locale=th_TH" target="_blank" aria-label="Facebook">
+            <a href="https://www.facebook.com/CIBTHAILAND/?locale=th_TH" target="_blank" rel="noopener" aria-label="Facebook">
               <i class="fa-brands fa-facebook fa-2x"></i>
             </a>
-            <a href="https://www.tiktok.com/@cibpolice" target="_blank" aria-label="TikTok">
+            <a href="https://www.tiktok.com/@cibpolice" target="_blank" rel="noopener" aria-label="TikTok">
               <i class="fa-brands fa-tiktok fa-2x"></i>
             </a>
-            <a href="https://www.instagram.com/cib_thailand/" target="_blank" aria-label="Instagram">
+            <a href="https://www.instagram.com/cib_thailand/" target="_blank" rel="noopener" aria-label="Instagram">
               <i class="fa-brands fa-instagram fa-2x"></i>
             </a>
           </div>

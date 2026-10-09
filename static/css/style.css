@@ -30,7 +30,7 @@ body {
   font-family: "Sarabun", sans-serif;
   margin: 0;
   padding: 0;
-  background-color: var(--bg-light);
+  background-color: var(--white);
   color: var(--text-dark);
   line-height: 1.6;
 }
@@ -89,9 +89,10 @@ header {
   padding: 5px 5%;
 }
 
-.logo h1 {
-  background-size: cover;
+.logo .site-name {
   font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 5px;
   color: var(--primary-color);
 }
 
@@ -376,7 +377,7 @@ th {
   position: relative;
 }
 
-header h1 {
+body h1 {
   margin: 0;
   font-size: 1.8rem;
   font-weight: 600;
@@ -384,7 +385,7 @@ header h1 {
   margin-bottom: 5px;
 }
 
-header p {
+body p {
   margin: 10px 0 0;
   font-size: 1rem;
   opacity: 0.9;
@@ -1164,7 +1165,7 @@ footer {
     position: relative;
   }
 
-  .logo h1 {
+  .logo .site-name {
     font-size: 1.1rem;
   }
 
@@ -1266,7 +1267,7 @@ footer {
 /* === Responsive: Mobile 480px === */
 /* ============================== */
 @media (max-width: 480px) {
-  .logo h1 {
+  .logo .site-name {
     font-size: 0.9rem;
   }
 

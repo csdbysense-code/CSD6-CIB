@@ -1,6 +1,6 @@
 {% extends "layout.html" %} {% block title %}กองกำกับการ 6 กองบังคับการปราบปราม{% endblock %} {% block
 content %}
-<section class="hero-banner"> >
+<section class="hero-banner">
 
   <div class="hero-overlay">
     <div class="hero-content">
@@ -19,14 +19,14 @@ content %}
 
 </section>
 <main class="main-container">
-  <a href="https://www.cib.go.th/" target="_blank" class="portal-card">
+  <a href="https://www.cib.go.th/" target="_blank" rel="noopener" class="portal-card">
     <img src="https://www.cib.go.th/uploads/logo_cib_lable_yellow_e5657fbe6b_0205329682.png" alt="CIB Logo"
       class="logo-img" />
     <div class="card-text">CIB Website</div>
     <div class="sub-text">เว็บไซต์หลักตำรวจสอบสวนกลาง</div>
   </a>
 
-  <a href="https://csd.cib.go.th/home" target="_blank" class="portal-card">
+  <a href="https://csd.cib.go.th/home" target="_blank" rel="noopener" class="portal-card">
     <img src="https://cib.go.th/backend/uploads/medium_logo_cib_2_2x_1be93f4a36_dc4193cba8.png" alt="CSD Logo"
       class="logo-img" />
     <div class="card-text">CSD Website</div>
@@ -109,7 +109,7 @@ content %}
   <p>
     เว็บไซต์นี้ใช้คุกกี้เพื่อวัตถุประสงค์ในการปรับปรุงประสบการณ์ของผู้ใช้ให้ดียิ่งขึ้น
     ท่านสามารถศึกษารายละเอียดเพิ่มเติมได้ที่
-    <a href="{{ url_for('privacy') }}" target="_blank">นโยบายความเป็นส่วนตัว</a>
+    <a href="{{ url_for('privacy') }}" target="_blank" rel="noopener">นโยบายความเป็นส่วนตัว</a>
   </p>
   <button id="accept-cookie-btn">รับทราบ</button>
 </div>

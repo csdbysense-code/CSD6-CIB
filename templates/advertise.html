@@ -125,7 +125,7 @@ block content %}
       }
 
       data.forEach((item) => {
-        const targetAttr = item.link !== "#" ? 'target="_blank"' : "";
+        const targetAttr = item.link !== "#" ? 'target="_blank" rel="noopener"' : "";
 
         const card = `
                     <a href="${item.link}" class="news-card" ${targetAttr}>
