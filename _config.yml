@@ -1,5 +1,6 @@
 # ตั้งค่า Jekyll ของ GitHub Pages — เว็บไซต์จริงรันด้วย Flask บน Render (https://csd6-cib.onrender.com)
 # ไฟล์นี้กันไม่ให้ GitHub Pages นำซอร์สโค้ด / template / README ไปเผยแพร่เป็นเว็บซ้ำ
+# (GitHub Pages ของ repo นี้ตั้งเป็น "Deploy from a branch" จึงสร้างเว็บจาก main ทุกครั้งที่ push)
 # (ถ้าปิด GitHub Pages ใน Settings → Pages แล้ว ลบไฟล์นี้ได้)
 exclude:
   - README.md
@@ -11,3 +12,4 @@ exclude:
   - static
   - tests
   - scripts
+  - .gitignore
