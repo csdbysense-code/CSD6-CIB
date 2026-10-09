@@ -1,0 +1,13 @@
+# ตั้งค่า Jekyll ของ GitHub Pages — เว็บไซต์จริงรันด้วย Flask บน Render (https://csd6-cib.onrender.com)
+# ไฟล์นี้กันไม่ให้ GitHub Pages นำซอร์สโค้ด / template / README ไปเผยแพร่เป็นเว็บซ้ำ
+# (ถ้าปิด GitHub Pages ใน Settings → Pages แล้ว ลบไฟล์นี้ได้)
+exclude:
+  - README.md
+  - app.py
+  - imageproxy.py
+  - gunicorn.conf.py
+  - requirements.txt
+  - templates
+  - static
+  - tests
+  - scripts

@@ -1,0 +1,48 @@
+# ตรวจเว็บไซต์อัตโนมัติ
+# - test: ทุกครั้งที่ push / เปิด PR → ทดสอบทุกหน้า + ตรวจ JavaScript (ถ้าไม่ผ่านจะขึ้นกากบาทสีแดง)
+# - sheet-images: ทุกวันเวลา 08:00 (เวลาไทย) → ตรวจรูปใน Google Sheets แล้วสรุปรายการที่ควรแก้ในหน้า Summary
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+  schedule:
+    - cron: "0 1 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run tests
+        run: python -m unittest -v
+      - name: Check JavaScript syntax
+        run: for f in static/js/*.js; do node --check "$f"; done
+
+  sheet-images:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    # ผลขึ้นกับเว็บภายนอก (Facebook ฯลฯ) จึงไม่นับเป็นความล้มเหลวของเว็บ
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Check images in Google Sheets
+        run: python scripts/check_sheet_images.py
