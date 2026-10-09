@@ -55,15 +55,6 @@ ul {
   transition: 0.3s;
 }
 
-.btn-primary {
-  background-color: var(--primary-color);
-  color: var(--white);
-}
-
-.btn-primary:hover {
-  background-color: var(--secondary-color);
-}
-
 .card {
   background: var(--white);
   padding: 20px;
@@ -125,42 +116,8 @@ header {
 }
 
 /* Hamburger Menu Button */
-.hamburger {
-  display: none;
-  flex-direction: column;
-  justify-content: space-between;
-  width: 30px;
-  height: 21px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  z-index: 105; /* Above menu */
-}
-
-.hamburger span {
-  width: 100%;
-  height: 3px;
-  background-color: var(--primary-color);
-  border-radius: 10px;
-  transition: all 0.3s linear;
-  position: relative;
-  transform-origin: 1px;
-}
 
 /* Hamburger Active State (X) */
-.hamburger.active span:nth-child(1) {
-  transform: rotate(45deg);
-}
-
-.hamburger.active span:nth-child(2) {
-  opacity: 0;
-  transform: translateX(20px);
-}
-
-.hamburger.active span:nth-child(3) {
-  transform: rotate(-45deg);
-}
 
 /* Mobile responsive menu */
 @media (max-width: 900px) {
@@ -205,56 +162,10 @@ header {
 }
 
 /* --- Layout: Login --- */
-.login-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background: linear-gradient(135deg,
-      var(--primary-color),
-      var(--secondary-color));
-}
-
-.login-box {
-  width: 100%;
-  max-width: 400px;
-  background: var(--white);
-  padding: 40px;
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  text-align: center;
-}
-
-.form-group {
-  margin-bottom: 20px;
-  text-align: left;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: 500;
-}
-
-.form-control {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: var(--border-radius);
-  font-family: "Sarabun", sans-serif;
-}
 
 /* --- Layout: Workspace (Admin) --- */
 
-.main-content {
-  flex: 1;
-  padding: 20px;
-}
-
 /* Responsive Table */
-.table-responsive {
-  overflow-x: auto;
-}
 
 table {
   width: 100%;
@@ -386,17 +297,11 @@ th {
     border-bottom: 4px solid var(--primary-color);
   }
 
-  .card-grid {
-    grid-template-columns: 1fr;
-  }
+  
 
-  .filter-box {
-    width: 100%;
-  }
+  
 
-  .filter-box select {
-    width: 100%;
-  }
+  
 
   .contact-container {
     grid-template-columns: 1fr;
@@ -444,19 +349,9 @@ th {
     /* ปรับขนาดตัวอักษรให้พอดีกับนิ้วมือ */
   }
 
-  .footer-container {
-    flex-direction: column;
-    align-items: center;
-    /* จัดให้อยู่ตรงกลางหน้าจอ */
-    text-align: center;
-  }
+  
 
-  .footer-item {
-    width: 100%;
-    /* ให้แต่ละส่วนกว้างเต็มจอ */
-    margin-bottom: 20px;
-    /* เพิ่มระยะห่างระหว่างชั้น */
-  }
+  
 }
 
 /* --- News Grid Layout --- */
@@ -473,7 +368,6 @@ th {
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
   background: var(--white);
   border-radius: 10px;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
@@ -504,67 +398,13 @@ header p {
   margin-bottom: 40px;
 }
 
-.month-title {
-  font-size: 1.5rem;
-  color: #444;
-  border-left: 5px solid #0056b3;
-  padding-left: 15px;
-  margin-bottom: 20px;
-  font-weight: bold;
-}
-
 /* Grid Layout สำหรับการ์ด */
-.cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
-}
 
 /* ดีไซน์ตัวการ์ด */
-.news-card {
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s;
-  text-decoration: none;
-  /* ลิงค์ไม่มีขีดเส้นใต้ */
-  color: inherit;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.news-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-}
 
 /* ส่วนรูปภาพในการ์ด */
-.card-image {
-  width: 100%;
-  height: 180px;
-  background-color: #ddd;
-  overflow: hidden;
-  position: relative;
-}
-
-.card-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  /* ให้ภาพเต็มพื้นที่โดยไม่เสียสัดส่วน */
-}
 
 /* ส่วนเนื้อหาในการ์ด */
-.card-content {
-  padding: 15px;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-}
 
 .card-date {
   font-size: 0.85rem;
@@ -573,23 +413,7 @@ header p {
   display: block;
 }
 
-.card-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  line-height: 1.4;
-  color: #222;
-  margin: 0;
-  /* ตัดคำถ้าเกิน 3 บรรทัด */
-  overflow: hidden;
-}
-
 /* Loading state */
-.loading {
-  text-align: center;
-  color: #666;
-  font-size: 1.2rem;
-  padding: 50px;
-}
 
 .tabs {
   display: flex;
@@ -634,57 +458,6 @@ header p {
   /* แสดงเมื่อถูกเลือก */
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.filter-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 30px;
-  gap: 10px;
-}
-
-.filter-label {
-  font-weight: 600;
-  font-size: 1.1rem;
-  color: #555;
-}
-
-.custom-select {
-  padding: 10px 15px;
-  font-family: "Sarabun", sans-serif;
-  font-size: 1rem;
-  color: #333;
-  background-color: white;
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  cursor: pointer;
-  outline: none;
-  min-width: 200px;
-  transition:
-    border-color 0.3s,
-    box-shadow 0.3s;
-}
-
-.custom-select:hover {
-  border-color: #bbb;
-}
-
-.custom-select:focus {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.1);
-}
-
 /* --- CSS เดิม --- */
 
 .month-title {
@@ -705,6 +478,8 @@ header p {
 
 /* News Card Design */
 .news-card {
+  /* ลิงค์ไม่มีขีดเส้นใต้ */
+  color: inherit;
   background: white;
   border-radius: 12px;
   overflow: hidden;
@@ -734,6 +509,7 @@ header p {
 }
 
 .card-image img {
+  /* ให้ภาพเต็มพื้นที่โดยไม่เสียสัดส่วน */;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -753,6 +529,8 @@ header p {
 }
 
 .card-title {
+  /* ตัดคำถ้าเกิน 3 บรรทัด */
+  overflow: hidden;
   font-size: 1.1rem;
   font-weight: 600;
   line-height: 1.4;
@@ -773,31 +551,9 @@ header p {
   animation: fadeIn 0.5s;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 /* --- สิ้นสุด CSS ของคุณ --- */
 
 /* --- เริ่ม CSS ประชาสัมพันธ์ --- */
-.filter-section {
-  margin-bottom: 30px;
-  text-align: right;
-}
-
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 25px;
-}
 
 .card:hover {
   transform: translateY(-5px);
@@ -820,103 +576,6 @@ header p {
   align-self: flex-start;
 }
 
-.modal {
-  display: none;
-  position: fixed;
-  z-index: 1000;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  background-color: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(5px);
-  animation: fadeIn 0.3s;
-}
-
-.modal-content {
-  background-color: #fefefe;
-  margin: 5% auto;
-  padding: 0;
-  border-radius: 12px;
-  width: 90%;
-  max-width: 800px;
-  position: relative;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  animation: slideIn 0.3s ease-out;
-}
-
-.close-btn {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-  position: absolute;
-  right: 20px;
-  top: 10px;
-  cursor: pointer;
-  z-index: 10;
-}
-
-.close-btn:hover {
-  color: black;
-}
-
-.modal-image {
-  width: 100%;
-  max-height: 400px;
-  object-fit: contain;
-  background-color: #000;
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
-}
-
-.modal-img {
-  height: 100%;
-  max-width: 100%;
-  object-fit: contain;
-}
-
-.modal-body {
-  padding: 30px;
-}
-
-.modal-title {
-  font-size: 1.5rem;
-  margin-bottom: 15px;
-  color: #2c3e50;
-}
-
-.modal-date {
-  color: #666;
-  font-size: 0.9rem;
-  margin-bottom: 10px;
-}
-
-.modal-desc {
-  font-size: 1rem;
-  line-height: 1.6;
-  color: #444;
-  white-space: pre-wrap;
-  /* รักษารูปแบบการขึ้นบรรทัดใหม่ */
-}
-
-.modal-text {
-  line-height: 1.8;
-  font-size: 1.1rem;
-  white-space: pre-wrap;
-  /* รักษารูปแบบการขึ้นบรรทัดใหม่ */
-  color: #444;
-}
-
-.modal-footer {
-  margin-top: 30px;
-  padding-top: 20px;
-  border-top: 1px solid #eee;
-  color: #666;
-  font-style: italic;
-}
-
 .header-section {
   display: flex;
   justify-content: space-between;
@@ -931,100 +590,6 @@ header p {
   font-weight: bold;
   color: var(--primary-color);
   margin: 0;
-}
-
-.card-img {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  background-color: #eee;
-}
-
-.card-img-top {
-  width: 100%;
-  height: 220px;
-  object-fit: cover;
-  background-color: #eee;
-}
-
-.card-body {
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-}
-
-.card-excerpt {
-  font-size: 0.95rem;
-  color: #555;
-  overflow: hidden;
-  margin-bottom: 15px;
-}
-
-.card-badge {
-  align-self: flex-start;
-  background-color: #e8eaf6;
-  color: var(--primary);
-  padding: 4px 12px;
-  border-radius: 15px;
-  font-size: 0.8rem;
-  margin-top: auto;
-}
-
-.close-modal {
-  position: absolute;
-  right: 20px;
-  top: 15px;
-  font-size: 30px;
-  font-weight: bold;
-  color: #fff;
-  cursor: pointer;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  z-index: 10;
-}
-
-.modal-img-container {
-  width: 100%;
-  max-height: 450px;
-  overflow: hidden;
-  border-radius: 12px 12px 0 0;
-  background: #000;
-  display: flex;
-  justify-content: center;
-}
-
-.tags-container {
-  margin-top: 30px;
-  padding-top: 20px;
-  border-top: 1px solid #eee;
-}
-
-.tag-link {
-  display: inline-block;
-  background-color: #1877f2;
-  /* Facebook Blue */
-  color: white;
-  text-decoration: none;
-  padding: 5px 12px;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  margin-right: 8px;
-  margin-bottom: 8px;
-  transition: background-color 0.3s;
-}
-
-.tag-link:hover {
-  background-color: #145dbf;
-}
-
-.filter-box select {
-  padding: 10px 20px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  font-size: 1rem;
-  background-color: #fff;
-  cursor: pointer;
-  outline: none;
 }
 
 /* --- สิ้นสุด CSS ประชาสัมพันธ์ --- */
@@ -1236,8 +801,8 @@ header p {
 }
 
 /* ปุ่มต่างๆ */
-.btn-map,
-.btn-social {
+
+.btn-map {
   display: inline-flex;
   align-items: center;
   padding: 8px 16px;
@@ -1247,9 +812,6 @@ header p {
   transition: all 0.3s ease;
   margin-top: 5px;
   font-weight: 500;
-}
-
-.btn-map {
   background-color: #fff;
   color: var(--primary-color);
   border: 1px solid var(--primary-color);
@@ -1419,6 +981,7 @@ iframe {
 /* === Hamburger Menu === */
 /* ============================== */
 .hamburger {
+  /* Above menu */;
   display: none;
   flex-direction: column;
   justify-content: center;
@@ -1436,6 +999,8 @@ iframe {
 }
 
 .hamburger span {
+  position: relative;
+  transform-origin: 1px;
   display: block;
   width: 22px;
   height: 2px;
@@ -1449,6 +1014,7 @@ iframe {
 }
 
 .hamburger.active span:nth-child(2) {
+  transform: translateX(20px);
   opacity: 0;
 }
 
@@ -1688,21 +1254,12 @@ footer {
   }
 
   /* Cards */
-  .card-grid {
-    grid-template-columns: 1fr;
-  }
+  
 
   /* Footer item legacy */
-  .footer-container {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
+  
 
-  .footer-item {
-    width: 100%;
-    margin-bottom: 20px;
-  }
+  
 }
 
 /* ============================== */
