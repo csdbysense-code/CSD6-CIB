@@ -20,11 +20,10 @@
   <meta name="theme-color" content="#00264b">
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;700&display=swap">
+  <!-- ฟอนต์เก็บไว้ในเว็บเอง (static/vendor) ไม่โหลดจาก Google / cdnjs -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/fontawesome/css/all.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/sarabun/css/sarabun.css') }}">
 </head>
 
 <body>

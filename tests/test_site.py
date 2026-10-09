@@ -64,6 +64,20 @@ class PageTests(unittest.TestCase):
                 self.assertNotRegex(html, r"<script>(?!\s*</script>)")
                 self.assertNotRegex(html, r"\son[a-z]+=\"")
 
+    def test_fonts_are_self_hosted(self):
+        # PDPA: ไม่ส่ง IP ผู้เข้าชมไปที่ Google Fonts / cdnjs
+        for path in PAGES + ["/privacy-policy"]:
+            with self.subTest(path=path):
+                html = self.client.get(path).get_data(as_text=True)
+                self.assertNotIn("fonts.googleapis.com", html)
+                self.assertNotIn("cdnjs.cloudflare.com", html)
+        for css_path in ("static/css/style.css", "static/vendor/fontawesome/css/all.min.css", "static/vendor/sarabun/css/sarabun.css"):
+            css = open(os.path.join(os.path.dirname(site.__file__), css_path), encoding="utf-8").read()
+            self.assertNotRegex(css, r"url\(\s*['\"]?https?://", css_path)
+            for ref in re.findall(r"url\(\s*['\"]?(\.\./[^)'\"]+)", css):
+                font = os.path.normpath(os.path.join(os.path.dirname(site.__file__), os.path.dirname(css_path), ref))
+                self.assertTrue(os.path.exists(font), f"{css_path} อ้างถึงไฟล์ที่ไม่มี: {ref}")
+
     def test_static_assets_exist(self):
         seen = set()
         for path in PAGES:
