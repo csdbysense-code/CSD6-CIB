@@ -1,75 +1,55 @@
-import html
-import ipaddress
 import os
-import re
-import socket
+import threading
 import time
-import urllib.request
-from urllib.parse import parse_qs, urlparse
+from collections import defaultdict, deque
 
-from flask import Flask, Response, abort, redirect, render_template, request
+from flask import Flask, Response, abort, render_template, request, send_from_directory
 
-app = Flask(__name__)
+from imageproxy import ALLOWED_WIDTHS, ImageCache, ImageError, is_public_url
 
-# --- ตัวช่วยดึงรูปภาพจากลิงก์หน้าเว็บ (Facebook / เว็บข่าว) ---
-# ลิงก์รูปใน Sheet บางอันเป็น "ลิงก์หน้าโพสต์/หน้าข่าว" ไม่ใช่ไฟล์รูปโดยตรง
-# endpoint นี้จะเปิดหน้านั้นแล้วหา og:image มาให้ (เก็บ cache ไว้ 6 ชั่วโมง)
-OG_CACHE = {}
-OG_CACHE_TTL = 6 * 60 * 60
-OG_CACHE_FAIL_TTL = 10 * 60
-OG_USER_AGENTS = [
-    "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)",
-    "Twitterbot/1.0",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-    "(KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+
+class CSD6Flask(Flask):
+    # ไฟล์ static ที่มี ?v=... (ใส่ให้อัตโนมัติด้านล่าง) cache ได้ 1 ปี เพราะเปลี่ยนไฟล์เมื่อไร v ก็เปลี่ยน
+    # ไฟล์ที่ถูกเรียกจาก CSS โดยตรง (ไม่มี v) cache 1 วัน
+    def get_send_file_max_age(self, filename):
+        return 365 * 24 * 60 * 60 if request.args.get("v") else 24 * 60 * 60
+
+
+app = CSD6Flask(__name__)
+
+# ที่อยู่เว็บจริง ใช้ทำ canonical / og:url / sitemap (เปลี่ยนได้ผ่าน environment variable)
+SITE_URL = os.environ.get("SITE_URL", "https://csd6-cib.onrender.com").rstrip("/")
+
+# หน้าที่แสดงในเมนูและ sitemap
+PAGES = [
+    ("index", "/"),
+    ("about", "/about"),
+    ("success", "/success"),
+    ("advertise", "/advertise"),
+    ("contact", "/contact"),
+    ("privacy", "/privacy-policy"),
 ]
-OG_PATTERNS = [
-    re.compile(r"""<meta[^>]+(?:property|name)=["'](?:og:image|twitter:image)(?::src)?["'][^>]*content=["']([^"']+)""", re.I),
-    re.compile(r"""<meta[^>]+content=["']([^"']+)["'][^>]*(?:property|name)=["'](?:og:image|twitter:image)["']""", re.I),
-]
 
 
-def is_public_url(url):
-    parsed = urlparse(url)
-    if parsed.scheme not in ("http", "https") or not parsed.hostname:
-        return False
-    try:
-        for info in socket.getaddrinfo(parsed.hostname, None):
-            if not ipaddress.ip_address(info[4][0]).is_global:
-                return False
-    except (socket.gaierror, ValueError):
-        return False
-    return True
-
-
-def find_og_image(url):
-    # ลิงก์รูป Facebook (photo?fbid=...) ดึงรูปจาก lookaside ได้ตรงๆ ไม่ต้องเปิดหน้าโพสต์
-    parsed = urlparse(url)
-    if (parsed.hostname or "").endswith("facebook.com") and "photo" in parsed.path:
-        fbid = parse_qs(parsed.query).get("fbid", [""])[0]
-        if fbid.isdigit():
-            return f"https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id={fbid}"
-
-    for ua in OG_USER_AGENTS:
+@app.url_defaults
+def add_static_version(endpoint, values):
+    # ใส่เวลาที่แก้ไขไฟล์ล่าสุดต่อท้ายลิงก์ static เพื่อให้ผู้ใช้ได้ไฟล์ใหม่ทันทีหลังอัปเดต
+    if endpoint == "static" and "filename" in values:
+        path = os.path.join(app.static_folder, values["filename"])
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": ua, "Accept-Language": "th,en;q=0.8"})
-            with urllib.request.urlopen(req, timeout=8) as resp:
-                if resp.headers.get_content_type().startswith("image/"):
-                    return resp.geturl()
-                page = resp.read(1_500_000).decode("utf-8", errors="ignore")
-        except Exception:
-            continue
-        for pattern in OG_PATTERNS:
-            match = pattern.search(page)
-            if match:
-                return html.unescape(match.group(1))
-    return None
+            values["v"] = int(os.stat(path).st_mtime)
+        except OSError:
+            pass
+
+
+@app.context_processor
+def inject_site():
+    return {"site_url": SITE_URL, "canonical_url": SITE_URL + request.path}
+
 
 # 1. หน้าแรก (Home)
 @app.route("/")
 def index():
-    # คำสั่งนี้จะไปเปิดไฟล์ templates/index.html 
-    # และ index.html จะไปดึง layout.html มาประกอบร่างเองโดยอัตโนมัติ
     return render_template("index.html")
 
 # 2. หน้าเกี่ยวกับเรา (About)
@@ -91,48 +71,110 @@ def contact():
 
 @app.route('/privacy-policy')
 def privacy():
-    # จะไปเรียกไฟล์ templates/privacy_policy.html
     return render_template('privacy_policy.html')
 
-@app.route("/api/image")
-def resolve_image():
-    url = request.args.get("url", "").strip()
-    if not url or not is_public_url(url):
+
+# --- รูปภาพ: ดึงจากลิงก์ใน Google Sheet ย่อขนาด แล้วส่งจาก server ของเรา ---
+image_cache = ImageCache()
+
+# จำกัดจำนวนรูปที่ "ยังไม่มีใน cache" ต่อ IP กันคนใช้ server เราไปดึงเว็บอื่นรัวๆ
+# (หน้าผลงานมี ~75 ข่าว x รูปสำรอง 2 ลิงก์ หลัง deploy ใหม่ cache จะว่าง จึงต้องเผื่อไว้พอ)
+IMAGE_MISS_LIMIT = 300  # ครั้ง / นาที / IP
+_image_misses = defaultdict(deque)
+_image_misses_lock = threading.Lock()
+
+
+def client_ip():
+    return (
+        request.headers.get("CF-Connecting-IP")
+        or request.headers.get("X-Forwarded-For", "").split(",")[0].strip()
+        or request.remote_addr
+    )
+
+
+def allow_image_miss(ip):
+    now = time.time()
+    with _image_misses_lock:
+        hits = _image_misses[ip]
+        while hits and now - hits[0] > 60:
+            hits.popleft()
+        if len(hits) >= IMAGE_MISS_LIMIT:
+            return False
+        hits.append(now)
+        if len(_image_misses) > 10_000:
+            _image_misses.clear()
+        return True
+
+
+@app.route("/img")
+def image():
+    src = request.args.get("src", "").strip()
+    try:
+        width = int(request.args.get("w", 600))
+    except ValueError:
+        abort(400)
+    if width not in ALLOWED_WIDTHS or not src.startswith(("http://", "https://")):
         abort(400)
 
-    cached = OG_CACHE.get(url)
-    # ถ้าครั้งก่อนหารูปไม่เจอ ให้ลองใหม่หลัง 10 นาที (กัน error ชั่วคราวค้างนาน)
-    ttl = OG_CACHE_TTL if cached and cached[0] else OG_CACHE_FAIL_TTL
-    if cached and time.time() - cached[1] < ttl:
-        image = cached[0]
-    else:
-        image = find_og_image(url)
-        OG_CACHE[url] = (image, time.time())
-
-    if not image:
-        abort(404)
-
-    # รูปจาก lookaside.fbsbx.com เปิดได้เฉพาะ crawler จึงต้องดึงผ่าน server ให้
-    if urlparse(image).hostname == "lookaside.fbsbx.com":
-        try:
-            req = urllib.request.Request(image, headers={"User-Agent": OG_USER_AGENTS[0]})
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                content_type = resp.headers.get_content_type()
-                if not content_type.startswith("image/"):
-                    abort(404)
-                data = resp.read(8_000_000)
-        except Exception:
+    fmt = "webp" if "image/webp" in request.headers.get("Accept", "") else "jpeg"
+    data = image_cache.cached(src, width, fmt)
+    if data is None:
+        if image_cache.recently_failed(src) or not is_public_url(src):
             abort(404)
-        return Response(data, mimetype=content_type,
-                        headers={"Cache-Control": "public, max-age=86400"})
+        if not allow_image_miss(client_ip()):
+            abort(429)
+        try:
+            data = image_cache.create(src, width, fmt)
+        except ImageError:
+            abort(404)
 
-    response = redirect(image)
-    response.headers["Cache-Control"] = "public, max-age=3600"
-    return response
+    return Response(
+        data,
+        mimetype=f"image/{fmt}",
+        headers={
+            "Cache-Control": "public, max-age=604800",
+            "Vary": "Accept",
+            "X-Content-Type-Options": "nosniff",
+        },
+    )
+
+
+# --- SEO / ไฟล์มาตรฐานของเว็บ ---
+@app.route("/robots.txt")
+def robots():
+    body = f"User-agent: *\nAllow: /\nDisallow: /img\n\nSitemap: {SITE_URL}/sitemap.xml\n"
+    return Response(body, mimetype="text/plain")
+
+
+@app.route("/sitemap.xml")
+def sitemap():
+    urls = "".join(f"  <url><loc>{SITE_URL}{path}</loc></url>\n" for _, path in PAGES)
+    body = f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{urls}</urlset>\n'
+    return Response(body, mimetype="application/xml")
+
+
+@app.route("/favicon.ico")
+def favicon():
+    return send_from_directory(app.static_folder, "images/favicon.png", mimetype="image/png", max_age=7 * 24 * 60 * 60)
+
+
+@app.errorhandler(404)
+def not_found(error):
+    return render_template("error.html", code=404, title="ไม่พบหน้าที่ต้องการ",
+                           message="หน้าที่ท่านค้นหาอาจถูกย้าย ลบ หรือพิมพ์ที่อยู่ไม่ถูกต้อง"), 404
+
+
+@app.errorhandler(500)
+def server_error(error):
+    return render_template("error.html", code=500, title="ระบบขัดข้องชั่วคราว",
+                           message="ขออภัยในความไม่สะดวก กรุณาลองใหม่อีกครั้งในภายหลัง"), 500
+
 
 if __name__ == "__main__":
-    app.run(debug=True) # เปิดโหมด debug เพื่อให้เว็บอัปเดตอัตโนมัติเวลาเราแก้โค้ด
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host='0.0.0.0', port=port)
+    # รันบนเครื่องตัวเอง: python app.py   (บน server ใช้ gunicorn ตาม gunicorn.conf.py)
+    # เปิดโหมด debug เฉพาะเมื่อตั้ง FLASK_DEBUG=1 เท่านั้น ห้ามเปิดบน server จริง
+    app.run(
+        host="127.0.0.1",
+        port=int(os.environ.get("PORT", 5000)),
+        debug=os.environ.get("FLASK_DEBUG") == "1",
+    )

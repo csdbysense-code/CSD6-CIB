@@ -1,0 +1,12 @@
+{% extends "layout.html" %} {% block title %}{{ title }}{% endblock %}
+{% block description %}{{ message }}{% endblock %} {% block content %}
+<main class="error-page">
+  <p class="error-code">{{ code }}</p>
+  <h1>{{ title }}</h1>
+  <p class="error-message">{{ message }}</p>
+  <div class="error-actions">
+    <a href="{{ url_for('index') }}" class="error-btn"><i class="fa-solid fa-house" aria-hidden="true"></i> กลับหน้าหลัก</a>
+    <a href="{{ url_for('contact') }}" class="error-btn error-btn-secondary">ติดต่อเรา</a>
+  </div>
+</main>
+{% endblock %}
