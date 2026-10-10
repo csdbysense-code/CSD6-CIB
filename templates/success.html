@@ -1,4 +1,5 @@
-{% extends "layout.html" %} {% block title %}ผลงาน{% endblock %}
+{% extends "layout.html" %}
+{% from "_newsboard.html" import news_board %} {% block title %}ผลงาน{% endblock %}
 {% block description %}สรุปข่าวและผลการปฏิบัติงานของกองกำกับการ 6 กองบังคับการปราบปราม เรียงจากข่าวล่าสุด ค้นหาและเลือกดูตามเดือนได้{% endblock %} {% block
 content %}
 <section class="page-banner">
@@ -11,39 +12,13 @@ content %}
   <div class="container">
     <h1>สรุปข่าวและผลการปฏิบัติงาน</h1>
 
-    <div id="loading" class="loading">กำลังโหลดข้อมูล...</div>
-
-    <div class="news-toolbar" id="filterContainer" hidden>
-      <div class="news-toolbar-row">
-        <div class="news-search">
-          <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-          <input
-            type="search"
-            id="newsSearch"
-            placeholder="ค้นหาชื่อเรื่อง..."
-            aria-label="ค้นหาชื่อเรื่อง"
-          />
-        </div>
-        <button type="button" id="sortToggle" class="news-sort" aria-label="สลับการเรียงลำดับ">
-          <i class="fa-solid fa-arrow-down-wide-short" aria-hidden="true"></i>
-          <span>ใหม่ล่าสุดก่อน</span>
-        </button>
-      </div>
-
-      <div class="period-picker">
-        <span class="period-label"><i class="fa-regular fa-calendar" aria-hidden="true"></i> ช่วงเวลา</span>
-        <div class="period-chips" id="periodChips" role="tablist" aria-label="เลือกช่วงเวลา"></div>
-      </div>
-
-      <p class="news-result" id="newsResult" aria-live="polite"></p>
-    </div>
-
-    <div id="newsGrid" class="news-list"></div>
+    {{ news_board("ช่วงเวลา", "fa-regular fa-calendar") }}
   </div>
 </main>
 {% endblock %}
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/common.js') }}"></script>
+<script src="{{ url_for('static', filename='js/newsboard.js') }}"></script>
 <script src="{{ url_for('static', filename='js/success.js') }}"></script>
 {% endblock %}

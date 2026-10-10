@@ -269,11 +269,6 @@ th {
 
 /* ปรับปรุงให้รองรับมือถือ */
 @media (max-width: 768px) {
-  .header-section {
-    flex-direction: column;
-    gap: 15px;
-    text-align: center;
-  }
 
   .hero-title {
     font-size: 2rem;
@@ -355,15 +350,6 @@ th {
 }
 
 /* --- News Grid Layout --- */
-.news-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 25px;
-}
-
-.news-grid.fade-in {
-  opacity: 1;
-}
 
 .container {
   max-width: 1200px;
@@ -566,30 +552,15 @@ body p {
 }
 
 .card-tag {
-  margin-top: auto;
+  margin-bottom: 8px;
   display: inline-block;
   background-color: #e3f2fd;
-  color: var(--accent-color);
+  color: var(--primary-color);
+  font-weight: 600;
   padding: 4px 10px;
   border-radius: 20px;
   font-size: 0.8rem;
   align-self: flex-start;
-}
-
-.header-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-  flex-wrap: wrap;
-  gap: 15px;
-}
-
-.header-title {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: var(--primary-color);
-  margin: 0;
 }
 
 /* --- สิ้นสุด CSS ประชาสัมพันธ์ --- */

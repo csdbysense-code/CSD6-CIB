@@ -1,0 +1,26 @@
+{#- แถบเครื่องมือ + รายการการ์ด ใช้ร่วมกันในหน้า ผลงาน และ ประชาสัมพันธ์ (ทำงานคู่กับ static/js/newsboard.js) -#}
+{% macro news_board(filter_label, filter_icon, search_placeholder="ค้นหาชื่อเรื่อง...") %}
+<div id="loading" class="loading">กำลังโหลดข้อมูล...</div>
+
+<div class="news-toolbar" id="filterContainer" hidden>
+  <div class="news-toolbar-row">
+    <div class="news-search">
+      <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+      <input type="search" id="newsSearch" placeholder="{{ search_placeholder }}" aria-label="{{ search_placeholder }}" />
+    </div>
+    <button type="button" id="sortToggle" class="news-sort" title="สลับการเรียงลำดับ">
+      <i class="fa-solid fa-arrow-down-wide-short" aria-hidden="true"></i>
+      <span>ใหม่ล่าสุดก่อน</span>
+    </button>
+  </div>
+
+  <div class="period-picker">
+    <span class="period-label" id="filterLabel"><i class="{{ filter_icon }}" aria-hidden="true"></i> {{ filter_label }}</span>
+    <div class="period-chips" id="periodChips" role="group" aria-labelledby="filterLabel"></div>
+  </div>
+
+  <p class="news-result" id="newsResult" aria-live="polite"></p>
+</div>
+
+<div id="newsGrid" class="news-list"></div>
+{% endmacro %}
