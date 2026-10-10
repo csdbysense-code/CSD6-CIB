@@ -16,6 +16,8 @@ class CSD6Flask(Flask):
 
 
 app = CSD6Flask(__name__)
+# ให้ /about/ (มี / ท้าย) เปิดได้เหมือน /about ไม่ขึ้น 404
+app.url_map.strict_slashes = False
 
 # ที่อยู่เว็บจริง ใช้ทำ canonical / og:url / sitemap (เปลี่ยนได้ผ่าน environment variable)
 SITE_URL = os.environ.get("SITE_URL", "https://csd6-cib.onrender.com").rstrip("/")
@@ -44,7 +46,8 @@ def add_static_version(endpoint, values):
 
 @app.context_processor
 def inject_site():
-    return {"site_url": SITE_URL, "canonical_url": SITE_URL + request.path}
+    path = request.path.rstrip("/") or "/"  # /about/ กับ /about คือหน้าเดียวกัน
+    return {"site_url": SITE_URL, "canonical_url": SITE_URL + path}
 
 
 # 1. หน้าแรก (Home)
@@ -160,13 +163,19 @@ def favicon():
 
 @app.errorhandler(404)
 def not_found(error):
-    return render_template("error.html", code=404, title="ไม่พบหน้าที่ต้องการ",
+    return render_template("error.html", code=404, noindex=True, title="ไม่พบหน้าที่ต้องการ",
                            message="หน้าที่ท่านค้นหาอาจถูกย้าย ลบ หรือพิมพ์ที่อยู่ไม่ถูกต้อง"), 404
+
+
+@app.errorhandler(405)
+def method_not_allowed(error):
+    return render_template("error.html", code=405, noindex=True, title="ไม่รองรับคำขอนี้",
+                           message="หน้านี้เปิดดูได้อย่างเดียว กรุณากลับไปที่หน้าหลัก"), 405
 
 
 @app.errorhandler(500)
 def server_error(error):
-    return render_template("error.html", code=500, title="ระบบขัดข้องชั่วคราว",
+    return render_template("error.html", code=500, noindex=True, title="ระบบขัดข้องชั่วคราว",
                            message="ขออภัยในความไม่สะดวก กรุณาลองใหม่อีกครั้งในภายหลัง"), 500
 
 

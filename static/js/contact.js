@@ -3,14 +3,40 @@
   const EMAIL = "saraban_csd.cib@police.go.th";
 
   const copyButton = document.getElementById("copyEmail");
+
+  // เบราว์เซอร์ในแอป (เช่น LINE) หรือหน้าที่ไม่ใช่ https อาจไม่มี navigator.clipboard จึงมีวิธีสำรอง
+  function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text);
+    return new Promise((resolve, reject) => {
+      const area = document.createElement("textarea");
+      area.value = text;
+      area.setAttribute("readonly", "");
+      area.style.cssText = "position:fixed;top:-1000px;opacity:0";
+      document.body.appendChild(area);
+      area.select();
+      const ok = document.execCommand && document.execCommand("copy");
+      area.remove();
+      ok ? resolve() : reject(new Error("copy not supported"));
+    });
+  }
+
+  function showStatus(message) {
+    copyButton.textContent = message;
+    setTimeout(() => (copyButton.textContent = "(คลิกเพื่อคัดลอกอีเมล)"), 2500);
+  }
+
   copyButton.addEventListener("click", () => {
-    navigator.clipboard
-      .writeText(EMAIL)
-      .then(() => {
-        copyButton.textContent = "(คัดลอกอีเมลแล้ว ✓)";
-        setTimeout(() => (copyButton.textContent = "(คลิกเพื่อคัดลอกอีเมล)"), 2500);
-      })
-      .catch((err) => console.error("ไม่สามารถคัดลอกได้", err));
+    copyText(EMAIL)
+      .then(() => showStatus("(คัดลอกอีเมลแล้ว ✓)"))
+      .catch(() => {
+        // คัดลอกไม่ได้: เลือกข้อความอีเมลไว้ให้ผู้ใช้กดคัดลอกเอง
+        const range = document.createRange();
+        range.selectNodeContents(document.getElementById("email-link"));
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        showStatus("(เลือกอีเมลไว้แล้ว กดคัดลอกได้เลย)");
+      });
   });
 
   // Google Maps จะตั้งคุกกี้ของ Google จึงโหลดเมื่อผู้ใช้ยอมรับคุกกี้ทั้งหมด หรือกดปุ่ม "แสดงแผนที่" เท่านั้น

@@ -105,6 +105,19 @@ class PageTests(unittest.TestCase):
         self.assertEqual(favicon.status_code, 200)
         self.assertEqual(favicon.mimetype, "image/png")
 
+    def test_trailing_slash_and_method(self):
+        res = self.client.get("/about/")
+        self.assertEqual(res.status_code, 200)
+        self.assertIn(f'<link rel="canonical" href="{site.SITE_URL}/about">', res.get_data(as_text=True))
+        res = self.client.post("/")
+        self.assertEqual(res.status_code, 405)
+        self.assertIn("ไม่รองรับคำขอนี้", res.get_data(as_text=True))
+
+    def test_error_pages_not_indexed(self):
+        html = self.client.get("/no-such-page").get_data(as_text=True)
+        self.assertIn('<meta name="robots" content="noindex">', html)
+        self.assertNotIn('rel="canonical"', html)
+
     def test_custom_404(self):
         res = self.client.get("/no-such-page")
         self.assertEqual(res.status_code, 404)

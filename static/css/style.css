@@ -890,13 +890,12 @@ iframe {
 
 /* ข้อความใต้โลโก้ */
 .card-text {
-  color: #ccc;
+  color: var(--primary-color);
   font-size: 1.2rem;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 2px;
   transition: color 0.3s;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .sub-text {
@@ -924,7 +923,7 @@ iframe {
 }
 
 .portal-card:hover .card-text {
-  color: #ffd700;
+  color: var(--secondary-color);
   /* เปลี่ยนตัวหนังสือเป็นสีทอง */
 }
 
@@ -1024,8 +1023,8 @@ footer {
   display: block;
 }
 
-.footer-address h3,
-.footer-contact h3 {
+.footer-address h2,
+.footer-contact h2 {
   margin-top: 0;
   font-size: 1.3rem;
   margin-bottom: 10px;
@@ -1463,6 +1462,26 @@ footer {
   padding: 40px 0;
 }
 
+.news-empty p {
+  margin: 0 0 12px;
+  opacity: 1;
+}
+
+.news-clear {
+  padding: 8px 20px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--primary-color);
+  background: #eef3f9;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.news-clear:hover {
+  background: #dfe8f3;
+}
+
 /* รูปในการ์ด: skeleton ระหว่างโหลด และภาพสำรองเมื่อไม่มีรูป */
 .card-image {
   background: linear-gradient(100deg, #eceff3 30%, #f6f8fa 50%, #eceff3 70%);
@@ -1623,10 +1642,17 @@ footer {
 }
 
 /* --- หน้าติดต่อ: ปุ่มคัดลอกอีเมล / แผนที่ที่โหลดเมื่อยินยอม --- */
+/* อีเมล / เบอร์โทร / ปุ่มคัดลอก ให้กดง่ายบนมือถือ (พื้นที่กดสูงอย่างน้อย 24px ตาม WCAG 2.2) */
+.info-content a[href^="mailto:"],
+.info-content a[href^="tel:"] {
+  display: inline-block;
+  padding: 6px 0;
+}
+
 .copy-email {
   background: none;
   border: 0;
-  padding: 0;
+  padding: 6px 0;
   font-family: inherit;
   font-size: 0.83em;
   color: #666;

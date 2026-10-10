@@ -2,10 +2,18 @@
 (function () {
   const { el, attachImage } = window.CSD6;
 
-  // ---------- แท็บ ----------
-  const tabButtons = document.querySelectorAll(".tab-btn[data-tab]");
-  tabButtons.forEach((button) => {
+  // ---------- แท็บ (กดลูกศรซ้าย/ขวา, Home, End เพื่อเปลี่ยนแท็บด้วยคีย์บอร์ดได้) ----------
+  const tabButtons = [...document.querySelectorAll(".tab-btn[data-tab]")];
+  tabButtons.forEach((button, index) => {
     button.addEventListener("click", () => openTab(button.dataset.tab));
+    button.addEventListener("keydown", (e) => {
+      const keys = { ArrowRight: index + 1, ArrowLeft: index - 1, Home: 0, End: tabButtons.length - 1 };
+      if (!(e.key in keys)) return;
+      e.preventDefault();
+      const next = tabButtons[(keys[e.key] + tabButtons.length) % tabButtons.length];
+      openTab(next.dataset.tab);
+      next.focus();
+    });
   });
 
   function openTab(tabName) {
@@ -16,6 +24,7 @@
       const active = button.dataset.tab === tabName;
       button.classList.toggle("active", active);
       button.setAttribute("aria-selected", active);
+      button.tabIndex = active ? 0 : -1;
     });
   }
 

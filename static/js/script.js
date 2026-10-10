@@ -72,5 +72,11 @@ document.addEventListener("DOMContentLoaded", () => {
         hamburger.focus();
       }
     });
+    // มือถือ: แตะพื้นที่อื่นนอกเมนูเพื่อปิดเมนู
+    document.addEventListener("click", (e) => {
+      if (mainMenu.classList.contains("open") && !mainMenu.contains(e.target) && !hamburger.contains(e.target)) {
+        setOpen(false);
+      }
+    });
   }
 });

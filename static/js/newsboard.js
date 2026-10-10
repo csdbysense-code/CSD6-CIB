@@ -163,7 +163,19 @@
       list.classList.add("fade-in");
 
       if (visible.length === 0) {
-        list.appendChild(el("p", { class: "news-empty", text: config.emptyText || "ไม่พบข้อมูล" }));
+        if (state.query) {
+          // ไม่พบเพราะคำค้น: บอกให้ชัดและมีปุ่มล้างคำค้น
+          const clear = el("button", { type: "button", class: "news-clear", text: "ล้างคำค้น" });
+          clear.addEventListener("click", () => {
+            $("newsSearch").value = "";
+            state.query = "";
+            render();
+            $("newsSearch").focus();
+          });
+          list.appendChild(el("div", { class: "news-empty" }, [el("p", { text: `ไม่พบรายการที่ตรงกับคำค้น “${state.query}”` }), clear]));
+        } else {
+          list.appendChild(el("p", { class: "news-empty", text: config.emptyText || "ไม่พบข้อมูล" }));
+        }
         return;
       }
 

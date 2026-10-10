@@ -55,14 +55,36 @@
   }
 
   // ---------- วันที่ ----------
-  // รองรับ d/m/yyyy ทั้ง พ.ศ. (2569) และ ค.ศ. (2026)
+  // ปี: พ.ศ. (2569), ค.ศ. (2026) หรือ 2 หลัก (69 = พ.ศ. 2569)
+  function toCE(yearText) {
+    let year = parseInt(yearText, 10);
+    if (yearText.length <= 2) year += 2500;
+    return year > 2400 ? year - 543 : year;
+  }
+
+  // สร้างวันที่ และปฏิเสธวันที่ที่ไม่มีจริง (เช่น 31/02 ซึ่ง JavaScript จะปัดไปเป็น 3 มี.ค. เอง)
+  function makeDate(year, monthIndex, day) {
+    const date = new Date(year, monthIndex, day);
+    return date.getFullYear() === year && date.getMonth() === monthIndex && date.getDate() === day ? date : null;
+  }
+
+  // รองรับ: 4/7/2569, 04-07-2026, 4.7.69, 2026-07-04, 4 ก.ค. 2569, 4 กรกฎาคม 2569
   function parseThaiDate(text) {
-    const m = (text || "").trim().match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
-    if (!m) return null;
-    let year = parseInt(m[3], 10);
-    if (year > 2400) year -= 543;
-    const date = new Date(year, parseInt(m[2], 10) - 1, parseInt(m[1], 10));
-    return isNaN(date) ? null : date;
+    const t = (text || "").trim();
+    let m = t.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4}|\d{2})$/);
+    if (m) return makeDate(toCE(m[3]), parseInt(m[2], 10) - 1, parseInt(m[1], 10));
+
+    m = t.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if (m) return makeDate(toCE(m[1]), parseInt(m[2], 10) - 1, parseInt(m[3], 10));
+
+    m = t.match(/^(\d{1,2})\s*([ก-๙.]+)\s*(\d{4}|\d{2})$/);
+    if (m) {
+      const name = m[2].replace(/\s/g, "");
+      let monthIndex = THAI_MONTHS.indexOf(name);
+      if (monthIndex < 0) monthIndex = THAI_MONTHS_SHORT.findIndex((s) => s === name || s.replace(/\./g, "") === name.replace(/\./g, ""));
+      if (monthIndex >= 0) return makeDate(toCE(m[3]), monthIndex, parseInt(m[1], 10));
+    }
+    return null;
   }
 
   // แปลงชื่อเดือน เช่น "กันยายน 2569" เป็นวันที่ 1 ของเดือนนั้น
@@ -81,9 +103,12 @@
 
   // ---------- ลิงก์ / รูปภาพ ----------
   // รับเฉพาะลิงก์ http(s) กันลิงก์แปลกๆ เช่น javascript: จาก Sheet
+  // ลิงก์ที่วางมาโดยไม่มี https:// (เช่น www.facebook.com/...) จะเติมให้
   function toUrl(value) {
     const url = (value || "").trim();
-    return /^https?:\/\//i.test(url) ? url : "";
+    if (/^https?:\/\/\S+$/i.test(url)) return url;
+    if (/^www\.[a-z0-9-]+\.[a-z]{2,}\S*$/i.test(url)) return "https://" + url;
+    return "";
   }
 
   // รูปทุกรูปโหลดผ่าน server ของเรา (/img) ซึ่งหารูปจริง ย่อขนาด และเก็บ cache ให้

@@ -38,7 +38,52 @@ def read_sheet(sheet_id):
 
 
 def is_url(value):
-    return value.strip().lower().startswith(("http://", "https://"))
+    # ให้ตรงกับ toUrl() ใน static/js/common.js
+    value = value.strip().lower()
+    return value.startswith(("http://", "https://", "www."))
+
+
+def to_url(value):
+    value = value.strip()
+    return "https://" + value if value.lower().startswith("www.") else value
+
+
+THAI_MONTHS = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+               "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"]
+THAI_MONTHS_SHORT = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
+                     "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."]
+
+
+def date_readable(text):
+    """True ถ้าหน้าเว็บอ่านวันที่นี้ได้ (กติกาเดียวกับ parseThaiDate() ใน static/js/common.js)"""
+    import datetime
+    import re
+    t = text.strip()
+
+    def ok(year_text, month, day):
+        year = int(year_text) + (2500 if len(year_text) <= 2 else 0)
+        year = year - 543 if year > 2400 else year
+        try:
+            datetime.date(year, month, day)
+            return True
+        except ValueError:
+            return False
+
+    m = re.fullmatch(r"(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{4}|\d{2})", t)
+    if m:
+        return ok(m[3], int(m[2]), int(m[1]))
+    m = re.fullmatch(r"(\d{4})-(\d{1,2})-(\d{1,2})", t)
+    if m:
+        return ok(m[1], int(m[2]), int(m[3]))
+    m = re.fullmatch(r"(\d{1,2})\s*([ก-๙.]+)\s*(\d{4}|\d{2})", t)
+    if m:
+        name = m[2].replace(" ", "")
+        names = [n.replace(".", "") for n in THAI_MONTHS_SHORT]
+        if name in THAI_MONTHS:
+            return ok(m[3], THAI_MONTHS.index(name) + 1, int(m[1]))
+        if name.replace(".", "") in names:
+            return ok(m[3], names.index(name.replace(".", "")) + 1, int(m[1]))
+    return False
 
 
 def check_row(sheet, number, row):
@@ -47,6 +92,8 @@ def check_row(sheet, number, row):
     problems = []
     if not date:
         problems.append("ไม่มีวันที่")
+    elif not date_readable(date):
+        problems.append(f"วันที่อ่านไม่ได้ ({date})")
     if link and not is_url(link):
         problems.append("ลิงก์ข่าวไม่ใช่ URL")
 
@@ -55,7 +102,7 @@ def check_row(sheet, number, row):
         if not is_url(source):
             continue
         try:
-            download_image(source)
+            download_image(to_url(source))
             working = name
             break
         except (ImageError, Exception):

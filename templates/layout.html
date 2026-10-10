@@ -8,12 +8,16 @@
   <meta name="description" content="{% block description %}เว็บไซต์ทางการของกองกำกับการ 6 กองบังคับการปราบปราม กองบัญชาการตำรวจสอบสวนกลาง สำนักงานตำรวจแห่งชาติ{% endblock %}">
   <meta name="keywords"
     content="CSD6, กองกำกับการ 6 กองบังคับการปราบปราม, กองบังคับการปราบปราม, บก.ป., ตำรวจสอบสวนกลาง, Crime Suppression Division">
+  {% if noindex %}
+  <meta name="robots" content="noindex">
+  {% else %}
   <link rel="canonical" href="{{ canonical_url }}">
+  {% endif %}
   <!-- Open Graph / Social Media -->
   <meta property="og:site_name" content="CSD6 | Crime Suppression Division">
   <meta property="og:title" content="{{ self.title() }} - CSD6">
   <meta property="og:description" content="{{ self.description() }}">
-  <meta property="og:url" content="{{ canonical_url }}">
+  {% if not noindex %}<meta property="og:url" content="{{ canonical_url }}">{% endif %}
   <meta property="og:image" content="https://cib.go.th/backend/uploads/medium_logo_cib_2_2x_1be93f4a36_dc4193cba8.png">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="th_TH">
@@ -73,7 +77,7 @@
         </div>
 
         <div class="footer-address">
-          <h3>ที่อยู่</h3>
+          <h2>ที่อยู่</h2>
           <p>
             1096 กองบังคับการปราบปราม ถนนพหลโยธิน
             แขวงจอมพล เขตจตุจักร กรุงเทพมหานคร <br />
@@ -93,7 +97,7 @@
         </div>
 
         <div class="footer-contact">
-          <h3>ติดต่อ</h3>
+          <h2>ติดต่อ</h2>
           <p>
             อีเมล: saraban_csd.cib@police.go.th <br />
             หมายเลขโทรศัพท์ติดต่อ: 02 5111 753
